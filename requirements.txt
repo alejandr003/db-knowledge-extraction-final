@@ -1,0 +1,16 @@
+# Core data manipulation
+pandas>=2.0
+numpy>=1.24
+
+# Static and statistical visualization
+matplotlib>=3.7
+seaborn>=0.12
+
+# Interactive web visualization
+plotly>=5.15
+
+# Notebook environment
+jupyter>=1.0
+
+# Install everything with:
+#   pip install -r requirements.txt
