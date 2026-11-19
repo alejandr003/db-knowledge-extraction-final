@@ -19,7 +19,7 @@
 | Original columns | 21 |
 | Processed columns | 27 |
 | Granularity | One row per order line (product within an order) |
-| Time range | Evaluated automatically in Notebooks |
+| Time range | 2014-01-03 → 2017-12-30 |
 | Geographic scope | United States |
 | Currency | USD |
 
@@ -125,3 +125,4 @@ Document every decision before applying it. **Never silently drop rows.**
 
 ```bash
 python src/clean_data.py
+```
