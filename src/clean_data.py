@@ -64,7 +64,7 @@ def load_raw(path: Path) -> pd.DataFrame:
             "https://raw.githubusercontent.com/datasets/sample-superstore/master/data/sample-superstore.csv "
             f"and save it as {path}."
         )
-    return pd.read_csv(path)
+    return pd.read_csv(path, encoding="windows-1252")
 
 
 def audit(df: pd.DataFrame, label: str) -> None:
