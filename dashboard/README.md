@@ -1,9 +1,10 @@
 # Dashboard Guide — Enterprise Dashboard
 
 > **Owner:** Neyzer (Role 2 — BI Dashboard Lead)
-> **Tool:** Power BI Desktop (`.pbix`) or Tableau Public (`.twbx`)
-> **Status:** Template — complete each section as the dashboard is built.
+> **Tool:** Power BI Desktop 2.159.1231.0 (Import mode)
+> **Status:** Semantic model **complete and validated**; report visuals built in Power BI Desktop.
 > **Primary file:** `dashboard/enterprise_dashboard.pbix`
+> **Screenshots:** `dashboard/screenshots/`
 
 ---
 
@@ -24,152 +25,249 @@ which actions would improve profit without sacrificing revenue?*
 |------|-------|
 | Source file | `data/processed/clean_dataset.csv` |
 | Source owner | Edwing (Role 1) |
-| Fact table (suggested name) | `Sales` |
-| Rows | TBD |
+| Fact table | `Sales` |
+| Fact rows | **9,994** order lines |
+| Date range | 2014-01-03 → 2017-12-30 |
 | Refresh mode | Import |
-| Date table | TBD (`DimDate` recommended) |
-| Relationships | TBD |
+| Date table | `DimDate` (marked as date table, 1,461 days) |
+| Implicit measures | **Disabled** (`discourageImplicitMeasures = true`) — always use the `_Measures` table |
 
-### Suggested star schema
+### Star schema
 
 ```text
-DimDate (Date) 1 ──── * Sales (Order Date)
+DimDate (Date)            1 ──── * Sales (Order Date)
+DimProduct (Product ID)   1 ──── * Sales (Product ID)
 DimCustomer (Customer ID) 1 ──── * Sales (Customer ID)
-DimProduct (Product ID) 1 ──── * Sales (Product ID)
-DimGeography (Postal Code / City / State) 1 ──── * Sales
-DimShipMode (Ship Mode) 1 ──── * Sales
+DimGeography (State)      1 ──── * Sales (State)
+DimShipMode (Ship Mode)   1 ──── * Sales (Ship Mode)
+_Measures (no relationship)
 ```
 
-If the model stays as a single flat table, document that decision here:
+### Table rows
 
-> TBD — reason for keeping a flat table:
+| Table | Rows | Grain / notes |
+|-------|------|---------------|
+| `Sales` | 9,994 | One row per order line |
+| `DimDate` | 1,461 | 2014-01-01 → 2017-12-31, marked as date table |
+| `DimProduct` | 1,862 | `Product ID` is **not** unique in the raw data (1,894 combinations); grouped by `Product ID` with `MIN()` per attribute to keep a valid one-side key |
+| `DimCustomer` | 793 | Unique `Customer ID` |
+| `DimGeography` | 49 | At **State** grain; `State` has data category *State or Province* |
+| `DimShipMode` | 4 | Standard / Second / First / Same Day |
+| `_Measures` | — | Host table for all DAX measures (placeholder column hidden) |
+
+### Relationships
+
+| From (many) | To (one) | Cardinality | Cross-filter |
+|-------------|----------|-------------|--------------|
+| `Sales[Order Date]` | `DimDate[Date]` | Many → One | Single |
+| `Sales[Product ID]` | `DimProduct[Product ID]` | Many → One | Single |
+| `Sales[Customer ID]` | `DimCustomer[Customer ID]` | Many → One | Single |
+| `Sales[State]` | `DimGeography[State]` | Many → One | Single |
+| `Sales[Ship Mode]` | `DimShipMode[Ship Mode]` | Many → One | Single |
+
+### Hierarchies (for drill-down)
+
+- `DimProduct[Product Hierarchy]`: Category → Sub-Category → Product
+- `DimGeography[Geography Hierarchy]`: Region → State
+- `DimDate[Calendar Hierarchy]`: Year → Quarter → Month → Date
+
+### Model hygiene
+
+- Fact columns that duplicate dimension attributes are hidden in the report view.
+- `Sales` keeps only `Sales`, `Quantity`, `Discount`, `Profit`, `Shipping Days`, and
+  `Discount Band` visible.
+- `DimProduct[Product ID]` and `DimCustomer[Customer ID]` are hidden keys.
+- Numeric formats: currency for Sales/Profit, percent for Discount, thousand separators for counts.
 
 ---
 
-## 3. Report pages
+## 3. Measures (DAX)
+
+All measures live in `_Measures`.
+
+| Measure | DAX | Format |
+|---------|-----|--------|
+| `Total Sales` | `SUM ( Sales[Sales] )` | `$#,##0` |
+| `Total Profit` | `SUM ( Sales[Profit] )` | `$#,##0` |
+| `Total Quantity` | `SUM ( Sales[Quantity] )` | `#,##0` |
+| `Total Orders` | `DISTINCTCOUNT ( Sales[Order ID] )` | `#,##0` |
+| `Profit Margin %` | `DIVIDE ( [Total Profit], [Total Sales], 0 )` | `0.0%` |
+| `Average Discount` | `AVERAGE ( Sales[Discount] )` | `0.0%` |
+| `Loss-Making Rows` | `CALCULATE ( COUNTROWS ( Sales ), Sales[Profit] < 0 )` | `#,##0` |
+| `Loss Rate %` | `DIVIDE ( [Loss-Making Rows], COUNTROWS ( Sales ), 0 )` | `0.0%` |
+| `Loss Amount` | `CALCULATE ( SUM ( Sales[Profit] ), Sales[Profit] < 0 )` | `$#,##0` |
+| `Loss-Making Products` | `COUNTROWS ( FILTER ( VALUES ( DimProduct[Product ID] ), CALCULATE ( [Total Profit] ) < 0 ) )` | `#,##0` |
+| `Avg Shipping Days` | `AVERAGE ( Sales[Shipping Days] )` | `0.0` |
+| `Sales per Order` | `DIVIDE ( [Total Sales], [Total Orders], 0 )` | `$#,##0.00` |
+| `Profit per Order` | `DIVIDE ( [Total Profit], [Total Orders], 0 )` | `$#,##0.00` |
+
+---
+
+## 4. Discount band (key insight)
+
+Calculated column `Sales[Discount Band]` (sorted by hidden `Discount Band Order`):
+
+| Band | Rows | Sales | Profit | Loss rate |
+|------|------|-------|--------|-----------|
+| 0% | 4,798 | $1,087,908 | **$320,988** | 0% |
+| 1–10% | 94 | $54,369 | $9,029 | 4.3% |
+| 11–20% | 3,709 | $792,153 | $91,756 | 14.0% |
+| 21–30% | 227 | $103,227 | **−$10,369** | 91.6% |
+| 31–40% | 233 | $130,911 | **−$25,448** | 88.8% |
+| >40% | 933 | $128,632 | **−$99,559** | 100% |
+
+> **Insight:** discounts **above 20%** (21%+) are loss-making. At exactly 20% the aggregate
+> margin is still 11.8%; at 15% it falls to 5.1%. Discount policy — not volume — is the profit
+> leak.
+
+---
+
+## 5. Report pages — build sheet
 
 ### Page 1 — Executive Overview
 
 | Element | Visual type | Fields | Purpose |
 |---------|-------------|--------|---------|
-| Total Sales | KPI card | `Sales` | Revenue headline |
-| Total Profit | KPI card | `Profit` | Profit headline |
-| Profit Margin % | KPI card | `Profit / Sales` | Efficiency headline |
-| Sales trend | Line chart | `Order Date`, `Sales` | Temporal pattern |
-| Sales by region | Filled map / bubble map | `State`, `Sales` | Geographic opportunity |
-| Sales by category | Bar chart | `Category`, `Sales` | Portfolio comparison |
-| Filters | Slicers | `Order Date`, `Region`, `Segment` | Interactive slicing |
+| Total Sales | Card | `[Total Sales]` | Revenue headline |
+| Total Profit | Card | `[Total Profit]` | Profit headline |
+| Profit Margin % | Card | `[Profit Margin %]` | Efficiency headline |
+| Total Orders | Card | `[Total Orders]` | Volume headline |
+| Loss Rate % | Card | `[Loss Rate %]` | Risk headline |
+| Sales trend | Line chart | Axis `DimDate[Calendar Hierarchy]`; values `[Total Sales]`, `[Total Profit]` | Temporal pattern |
+| Sales by state | Map (filled/bubble) | Location `DimGeography[State]`; size/color `[Total Sales]` | Geographic opportunity |
+| Sales by category | Clustered bar | Axis `DimProduct[Category]`; value `[Total Sales]` | Portfolio comparison |
+| Filters | Slicers | `DimDate[Year]` (or date range), `DimGeography[Region]`, `DimCustomer[Segment]` | Interactive slicing |
+
+Layout: KPI cards across the top, trend on the left-middle, map on the right-middle, category bar
+at the bottom. Add a **Reset filters** bookmark/button.
 
 ### Page 2 — Operational Drill-Down
 
 | Element | Visual type | Fields | Purpose |
 |---------|-------------|--------|---------|
-| Profit by category | Bar chart | `Category`, `Profit` | Where profit is created/lost |
-| Profit by sub-category | Bar chart | `Sub-Category`, `Profit` | Narrow the driver |
-| Product detail | Matrix/table | `Product Name`, `Sales`, `Profit`, `Discount` | Root-cause inspection |
-| Discount vs. profit | Scatter chart | `Discount`, `Profit`, `Sub-Category` | Margin erosion |
-| Drill path | Hierarchy | `Category → Sub-Category → Product Name` | Guided investigation |
+| Profit by category | Clustered bar | Axis `DimProduct[Product Hierarchy]` (start at Category); value `[Total Profit]` | Where profit is created/lost (drill down to Sub-Category and Product) |
+| Profit by sub-category | Clustered bar | Axis `DimProduct[Sub-Category]`; value `[Total Profit]` | Narrow the driver |
+| Product detail | Matrix | Rows `DimProduct[Product Name]`; values `[Total Sales]`, `[Total Profit]`, `[Average Discount]`; sort `[Total Profit]` ascending | Root-cause inspection |
+| Discount vs. profit | Scatter | X `Sales[Discount]`; Y `Sales[Profit]`; details `DimProduct[Sub-Category]` / `DimProduct[Product Name]` | Margin erosion |
+| Discount band | Clustered column | Axis `Sales[Discount Band]`; value `[Total Profit]`; line `[Loss Rate %]` | Threshold evidence |
+| Losses | Card | `[Loss-Making Rows]`, `[Loss Amount]`, `[Loss-Making Products]` | Risk totals |
+
+Layout: use the **drill-down** buttons on the hierarchy bar; keep the matrix sorted ascending by
+profit so the worst products surface first.
+
+#### As built (2026-11-19)
+
+- Page 1 titles (Spanish): `Sales by State`, `Sales por Category`, `Total Sales y Total Profit
+  por Date`; slicers `Year`, `Region`, `Segment` (checkbox lists, no overlap).
+- Page 2 titles (Spanish): `Product Details`, `Total Profit por Sub-Category`, `Total Profit por
+  Category`, `Total Profit y Loss Rate % por Discount Band`, `Average Discount y Total Profit
+  por Sub-Category`.
+- Page 2 scatter is aggregated by `DimProduct[Sub-Category]` (X = `Average Discount`,
+  Y = `Total Profit`) instead of order-line detail; the matrix is currently sorted by
+  `Total Sales` ascending (switch to `Total Profit` ascending to surface the biggest losses).
+- The trend line is at daily grain (`DimDate[Date]`); switch the X axis to `DimDate[Year Quarter]`
+  for a cleaner executive view.
 
 ### Optional Page 3 — Geography / Operations
 
-- Shipping delay by state (`Shipping Days`).
-- Sales vs. profit bubble map.
-- Loss-making states or cities.
+- `Avg Shipping Days` by `DimShipMode[Ship Mode]` (bar, 0-baseline).
+- Profit by `DimGeography[Geography Hierarchy]` (Region → State), diverging colors.
+- Loss-making states table (`DimGeography[State]`, `[Total Profit]`, `[Loss Rate %]`), sorted ascending.
 
 ---
 
-## 4. Measures (DAX)
-
-Create these in a dedicated `_Measures` table.
-
-```dax
-Total Sales = SUM ( Sales[Sales] )
-
-Total Profit = SUM ( Sales[Profit] )
-
-Total Quantity = SUM ( Sales[Quantity] )
-
-Total Orders = DISTINCTCOUNT ( Sales[Order ID] )
-
-Profit Margin % = DIVIDE ( [Total Profit], [Total Sales], 0 )
-
-Average Discount = AVERAGE ( Sales[Discount] )
-
-Loss-Making Rows =
-CALCULATE ( COUNTROWS ( Sales ), Sales[Profit] < 0 )
-
-Loss Rate % =
-DIVIDE ( [Loss-Making Rows], COUNTROWS ( Sales ), 0 )
-```
-
-Format `[Total Sales]` and `[Total Profit]` as currency (USD) and `[Profit Margin %]` as a
-percentage with one decimal.
-
----
-
-## 5. Visual design standards
+## 6. Visual design standards
 
 - **0-baseline:** every bar and column chart starts at 0. Never truncate the axis.
-- **Sequential palette:** ordered magnitudes (sales volume, quantity) use Viridis or Blues.
-- **Diverging palette:** profit vs. loss uses a diverging scale centered at **0** (blue/orange
-  or red/blue), never red/green.
-- **Qualitative palette:** categories use a colorblind-safe qualitative palette.
-- **Decluttering:** remove unnecessary gridlines, borders, redundant legends, and default
-  titles; every visual needs a clear, action-oriented title.
+- **Sequential palette:** ordered magnitudes (sales, quantity) use Blues or Viridis.
+- **Diverging palette:** profit vs. loss uses a diverging scale centered at **0** (blue/orange),
+  never red/green.
+- **Qualitative palette:** categories use a colorblind-safe palette.
+- **Decluttering:** remove gridlines, borders, redundant legends, and default titles; use
+  action-oriented titles.
 - **Preattentive attributes:** highlight only the 1–2 numbers or bars that support the insight.
+- Conditional formatting on the product matrix: profit cells with a diverging color scale centered at 0.
 
 ---
 
-## 6. Interactivity checklist
+## 7. Interactivity checklist
 
 - [ ] Date slicer filters every page.
 - [ ] Region and Segment slicers cross-filter the visuals.
-- [ ] Category bar drills to Sub-Category, then Product Name.
-- [ ] Map tooltips show Sales, Profit, and Profit Margin.
+- [ ] Category bar drills to Sub-Category, then Product (Product Hierarchy).
+- [ ] Map tooltip shows Sales, Profit, and Profit Margin.
 - [ ] Reset-filters bookmark or button available.
 - [ ] Page navigation is obvious (buttons or tabs).
 - [ ] Mobile layout checked (optional but recommended).
 
 ---
 
-## 7. How to refresh / open the dashboard
+## 8. How to refresh / open the dashboard
 
 1. Confirm `data/processed/clean_dataset.csv` exists (Role 1).
-2. Open `dashboard/enterprise_dashboard.pbix`.
+2. Open `dashboard/enterprise_dashboard.pbix` in Power BI Desktop.
 3. If prompted, update the source path:
    `Transform data → Data source settings → Change Source`.
+   The source is the absolute OneDrive path used during authoring; each teammate must point it
+   to their local clone.
 4. Select **Refresh**.
-5. Verify the KPI cards match the notebook totals.
-6. Save and commit the `.pbix` file.
+5. Verify the KPI cards match section 10.
+6. Save (`Ctrl+S`) and commit the `.pbix`.
 
-> Power BI stores absolute file paths. When another teammate opens the file, they may need to
-> update the path to their local clone. Document any path issue in section 9.
-
----
-
-## 8. Screenshots for the deck
-
-Export the final views to `assets/plots/` for Role 4 (storytelling lead):
-
-- [ ] `dashboard_executive_overview.png`
-- [ ] `dashboard_drilldown.png`
-- [ ] `dashboard_geography.png` (optional)
-
-Use **File → Export → Export current view** or a clean screenshot at 1920×1080.
+> Power BI stores absolute file paths. After cloning the repository, re-point the CSV source and
+> refresh. Do not commit temporary lock files.
 
 ---
 
-## 9. Known issues and decisions
+## 9. Screenshots for the deck
+
+Clean page captures are in `dashboard/screenshots/` for Josmar (Role 4):
+
+- [x] `dashboard_executive_overview.png` — Page 1, 1488×845
+- [x] `dashboard_drilldown.png` — Page 2, 1488×845
+- [ ] `dashboard_geography.png` (optional, not built)
+
+Captured from Power BI Desktop at *Fit to page* (78%) and cropped to the report canvas (no
+ribbon or panes). Visual titles are in Spanish in the current build; translate them in the slides
+if needed. Do not edit the data in the images.
+
+---
+
+## 10. Verification values (must match the notebook)
+
+| Metric | Value |
+|--------|-------|
+| Total Sales | **$2,297,200.86** |
+| Total Profit | **$286,397.02** |
+| Profit Margin % | **12.47%** |
+| Total Orders | **5,009** |
+| Total Quantity | **37,873** |
+| Average Discount | **15.62%** |
+| Loss-Making Rows | **1,871** |
+| Loss Rate % | **18.72%** |
+| Loss Amount | **−$156,131.29** |
+| Loss-Making Products (by Product ID) | **299** |
+| Avg Shipping Days | **3.96** |
+
+---
+
+## 11. Known issues and decisions
 
 | Date | Issue / decision | Resolution | Owner |
 |------|------------------|------------|-------|
-| TBD | TBD | TBD | Neyzer |
+| 2026-11-19 | `Product ID` not unique across attributes (1,862 IDs vs 1,894 combinations) | `DimProduct` groups by `Product ID` using `MIN()` for Name/Category/Sub-Category, preserving a valid 1→* relationship | Neyzer |
+| 2026-11-19 | Geography kept at State grain instead of Postal Code | Map and regional analysis only need State; avoids duplicate postal-code keys across cities | Neyzer |
+| 2026-11-19 | Discount bands initially off by one boundary | Rebuilt with inclusive upper bounds (`≤10%`, `≤20%`, …); totals now match the Python analysis | Neyzer |
+| 2026-11-19 | Implicit measures could distort aggregates | `discourageImplicitMeasures = true`; all visuals must use `_Measures` | Neyzer |
+| 2026-11-19 | Data source is an absolute OneDrive path | Documented in section 8; re-point after cloning | Neyzer |
+| 2026-11-19 | KPI cards use Auto display units ("mil") | Set **Display units = None** if exact figures are required in the deck; exact values remain in the matrix and tooltips | Neyzer |
 
 ---
 
-## 10. Changelog
+## 12. Changelog
 
 | Date | Author | Change |
 |------|--------|--------|
 | 2026-11-06 | Jesus (Role 5) | Initial template created |
-| TBD | Neyzer (Role 2) | Data model, pages, and measures completed |
+| 2026-11-19 | Neyzer (Role 2) | Star-schema model, 5 relationships, 3 hierarchies, 13 DAX measures, discount-band column; README completed; visuals pending |
+| 2026-11-19 | Neyzer (Role 2) | Page 1 (Executive Overview) and Page 2 (Operational Drill-Down) built; screenshots captured to `dashboard/screenshots/` |
