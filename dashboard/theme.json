@@ -1,0 +1,24 @@
+{
+  "name": "Enterprise Accessible (Role 2)",
+  "dataColors": [
+    "#2E6FB7",
+    "#E07B39",
+    "#4C9F70",
+    "#B07AA1",
+    "#76B7B2",
+    "#EDC948",
+    "#FF9DA7",
+    "#9C755F"
+  ],
+  "good": "#2E6FB7",
+  "neutral": "#9AA0A6",
+  "bad": "#E07B39",
+  "maximum": "#1F4E79",
+  "center": "#F2F2F2",
+  "minimum": "#F4B183",
+  "foreground": "#333333",
+  "foregroundNeutralSecondary": "#666666",
+  "background": "#FFFFFF",
+  "backgroundLight": "#F5F7FA",
+  "tableAccent": "#2E6FB7"
+}
