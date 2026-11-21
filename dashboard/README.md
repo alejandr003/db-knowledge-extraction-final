@@ -163,8 +163,8 @@ profit so the worst products surface first.
   Category`, `Total Profit y Loss Rate % por Discount Band`, `Average Discount y Total Profit
   por Sub-Category`.
 - Page 2 scatter is aggregated by `DimProduct[Sub-Category]` (X = `Average Discount`,
-  Y = `Total Profit`) instead of order-line detail; the matrix is currently sorted by
-  `Total Sales` ascending (switch to `Total Profit` ascending to surface the biggest losses).
+  Y = `Total Profit`) instead of order-line detail; the matrix is sorted by
+  `Total Profit` ascending (worst products first).
 - The trend line is at daily grain (`DimDate[Date]`); switch the X axis to `DimDate[Year Quarter]`
   for a cleaner executive view.
 
@@ -249,6 +249,11 @@ if needed. Do not edit the data in the images.
 | Loss-Making Products (by Product ID) | **299** |
 | Avg Shipping Days | **3.96** |
 
+> **Note on 299 vs 301:** at 2-decimal currency precision, **299** products have a negative
+> total profit. A raw floating-point `< 0` in pandas returns 301 because two product IDs have
+> totals of −1.78e−15 (`FUR-CH-10004289`) and −7.11e−15 (`OFF-SU-10003505`); both round to
+> **$0.00**. Power BI's `SUM` returns 0 for them, so the DAX measure correctly returns **299**.
+
 ---
 
 ## 11. Known issues and decisions
@@ -261,6 +266,7 @@ if needed. Do not edit the data in the images.
 | 2026-11-19 | Implicit measures could distort aggregates | `discourageImplicitMeasures = true`; all visuals must use `_Measures` | Neyzer |
 | 2026-11-19 | Data source is an absolute OneDrive path | Documented in section 8; re-point after cloning | Neyzer |
 | 2026-11-19 | KPI cards use Auto display units ("mil") | Set **Display units = None** if exact figures are required in the deck; exact values remain in the matrix and tooltips | Neyzer |
+| 2026-11-20 | QA reported `Loss-Making Products` as 301 vs the dashboard's 299 | **299 is correct at currency precision.** The 301 count comes from two float residues (−1.78e−15 and −7.11e−15) that round to $0.00; the DAX `SUM` returns 0 for both. Documented in section 10; no model change required | Neyzer |
 
 ---
 
@@ -271,3 +277,4 @@ if needed. Do not edit the data in the images.
 | 2026-11-06 | Jesus (Role 5) | Initial template created |
 | 2026-11-19 | Neyzer (Role 2) | Star-schema model, 5 relationships, 3 hierarchies, 13 DAX measures, discount-band column; README completed; visuals pending |
 | 2026-11-19 | Neyzer (Role 2) | Page 1 (Executive Overview) and Page 2 (Operational Drill-Down) built; screenshots captured to `dashboard/screenshots/` |
+| 2026-11-20 | Neyzer (Role 2) | QA reconciliation for `Loss-Making Products` (299 is correct at 2-decimal precision; 301 is a float artifact); matrix sort note corrected to `Total Profit` ascending |
