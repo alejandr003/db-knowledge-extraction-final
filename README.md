@@ -223,7 +223,7 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [x] Final project preview notebook added (`FINAL_PROJECT_PREVIEW.ipynb`)
 - [x] 0-baseline and colorblind-safe palette final audit (static check en notebook/dashboard)
 - [x] Notebook reproduces from `Kernel → Restart & Run All` (verificado con nbconvert + scipy)
-- [ ] `.pbix` opens without broken data-source errors (verificar en Power BI Desktop)
+- [x] `.pbix` opens without broken data-source errors (verificado en Power BI Desktop)
 
 ---
 
