@@ -219,7 +219,8 @@ jupyter notebook notebooks/final_visualizations.ipynb
 ### Role 5 — QA & Integration Lead (Jesus)
 - [x] Repository structure, `.gitignore`, `requirements.txt`, `README.md`
 - [x] PR reviews and merge QA for Roles 1–3
-- [ ] Public access verified (“Everyone with the link”)
+- [x] Public access verified (“Everyone with the link”) — repo público
+- [x] Final project preview notebook added (`FINAL_PROJECT_PREVIEW.ipynb`)
 - [ ] 0-baseline and colorblind-safe palette final audit
 - [ ] Notebook reproduces from `Kernel → Restart & Run All`
 - [ ] `.pbix` opens without broken data-source errors
