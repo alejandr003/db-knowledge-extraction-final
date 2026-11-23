@@ -224,8 +224,6 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [ ] 0-baseline and colorblind-safe palette final audit
 - [ ] Notebook reproduces from `Kernel → Restart & Run All`
 - [ ] `.pbix` opens without broken data-source errors
-- [ ] `presentation/LINKS.md` and `presentation/SPEAKER_NOTES.md` complete
-- [ ] Timed rehearsal of the 10-minute presentation
 
 ---
 
