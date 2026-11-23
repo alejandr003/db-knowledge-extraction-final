@@ -221,9 +221,9 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [x] PR reviews and merge QA for Roles 1–3
 - [x] Public access verified (“Everyone with the link”) — repo público
 - [x] Final project preview notebook added (`FINAL_PROJECT_PREVIEW.ipynb`)
-- [ ] 0-baseline and colorblind-safe palette final audit
-- [ ] Notebook reproduces from `Kernel → Restart & Run All`
-- [ ] `.pbix` opens without broken data-source errors
+- [x] 0-baseline and colorblind-safe palette final audit (static check en notebook/dashboard)
+- [x] Notebook reproduces from `Kernel → Restart & Run All` (verificado con nbconvert + scipy)
+- [ ] `.pbix` opens without broken data-source errors (verificar en Power BI Desktop)
 
 ---
 
