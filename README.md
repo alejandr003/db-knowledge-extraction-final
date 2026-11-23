@@ -233,8 +233,8 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [ ] Sequential palettes for ordered magnitudes; diverging palettes for profit/loss.
 - [ ] Colorblind-safe choices (Viridis, Blue/Orange); no problematic red-green pairing.
 - [ ] No redundant legends, unnecessary gridlines, or top/right spines.
-- [ ] Notebook runs top-to-bottom with no missing files or hard-coded absolute paths.
-- [ ] Dashboard loads with the processed CSV and all pages render.
+- [x] Notebook runs top-to-bottom with no missing files or hard-coded absolute paths (verificado con nbconvert).
+- [x] Dashboard loads with the processed CSV and all pages render (verificado en Power BI Desktop).
 - [ ] Deck and repository links open in an incognito window (public access).
 - [ ] All 5 members speak for ~2 minutes and the total stays at 10 minutes.
 
