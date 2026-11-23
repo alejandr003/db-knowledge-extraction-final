@@ -229,10 +229,10 @@ jupyter notebook notebooks/final_visualizations.ipynb
 
 ## QA checklist (Role 5)
 
-- [ ] Every bar/column chart starts strictly at **0**.
-- [ ] Sequential palettes for ordered magnitudes; diverging palettes for profit/loss.
-- [ ] Colorblind-safe choices (Viridis, Blue/Orange); no problematic red-green pairing.
-- [ ] No redundant legends, unnecessary gridlines, or top/right spines.
+- [x] Every bar/column chart starts strictly at **0** (verificado visualmente en Power BI Desktop).
+- [x] Sequential palettes for ordered magnitudes; diverging palettes for profit/loss (verificado visualmente).
+- [x] Colorblind-safe choices (Viridis, Blue/Orange); no problematic red-green pairing (verificado visualmente).
+- [x] No redundant legends, unnecessary gridlines, or top/right spines (verificado visualmente).
 - [x] Notebook runs top-to-bottom with no missing files or hard-coded absolute paths (verificado con nbconvert).
 - [x] Dashboard loads with the processed CSV and all pages render (verificado en Power BI Desktop).
 - [ ] Deck and repository links open in an incognito window (public access).
