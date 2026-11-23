@@ -17,8 +17,8 @@ Resolution** framework.
 | # | Role | Member | Owns | Main deliverables |
 |---|------|--------|------|-------------------|
 | 1 | Data Architect & Wrangler | **Edwing** | `data/`, `src/` | Raw dataset, `clean_data.py`, processed CSV, data dictionary |
-| 2 | BI Dashboard Lead | **Neyzer** | `dashboard/` | `.pbix` / `.twbx` dashboard, dashboard guide |
-| 3 | Python Visualization Specialist | **Laura** | `notebooks/`, `assets/plots/` | Executed `final_visualizations.ipynb`, PNG/HTML assets |
+| 2 | BI Dashboard Lead | **Neyzer** | `dashboard/` | `.pbix` dashboard, theme, screenshots, dashboard guide |
+| 3 | Python Visualization Specialist | **Laura** | `notebooks/`, `assets/plots/` | Executed `final_visualizations.ipynb`, PNG/SVG/HTML assets |
 | 4 | Narrative & Data Storytelling Lead | **Josmar** | `presentation/` | Executive deck (PDF/PPTX), Canva link, speaker narrative |
 | 5 | QA & Integration Lead | **Jesus** | Root files, `presentation/` | `.gitignore`, `requirements.txt`, `README.md`, links, QA audit, rehearsal |
 
@@ -31,47 +31,76 @@ Resolution** framework.
 
 ```text
 db-knowledge-extraction-final/
-├── .gitignore                     # Role 5 — ignored files and folders
-├── README.md                      # Role 5 — project overview and team roster
-├── requirements.txt               # Role 5 — Python dependencies
+├── .gitignore
+├── README.md
+├── requirements.txt
 ├── data/
 │   ├── raw/
-│   │   └── .gitkeep               # Role 1 — raw dataset goes here
+│   │   ├── .gitkeep
+│   │   └── superstore_raw.csv                # Role 1 — original dataset (CSV)
 │   ├── processed/
-│   │   └── .gitkeep               # Role 1 — cleaned dataset goes here
-│   └── DATA_DICTIONARY.md         # Role 1 — field definitions and quality log
+│   │   ├── .gitkeep
+│   │   └── clean_dataset.csv                 # Role 1 — cleaned dataset (CSV)
+│   └── DATA_DICTIONARY.md                    # Role 1 — field definitions and quality log
 ├── src/
-│   └── clean_data.py              # Role 1 — cleaning and transformation script
+│   └── clean_data.py                         # Role 1 — cleaning and transformation script
 ├── dashboard/
-│   ├── README.md                  # Role 2 — dashboard guide and measure definitions
-│   └── .gitkeep                   # Role 2 — .pbix / .twbx goes here
+│   ├── .gitkeep
+│   ├── README.md                             # Role 2 — dashboard guide and measures
+│   ├── enterprise_dashboard.pbix             # Role 2 — Power BI dashboard
+│   ├── theme.json                            # Role 2 — accessible report theme
+│   └── screenshots/
+│       ├── .gitkeep
+│       ├── dashboard_executive_overview.png
+│       └── dashboard_drilldown.png
 ├── notebooks/
-│   └── final_visualizations.ipynb # Role 3 — statistical and interactive visuals
+│   └── final_visualizations.ipynb            # Role 3 — statistical and interactive visuals
 ├── assets/
 │   └── plots/
-│       └── .gitkeep               # Role 3 — exported PNG/SVG/HTML assets
+│       ├── .gitkeep
+│       ├── boxplot_profit.png / .svg
+│       ├── correlation_heatmap.png / .svg
+│       ├── distribution_kde.png / .svg
+│       ├── uncertainty_ci.png / .svg
+│       └── interactive_scatter.html
 └── presentation/
-    ├── LINKS.md                   # Role 4/5 — submission links and access checks
-    └── SPEAKER_NOTES.md           # Role 4/5 — 10-minute script and timing
+    ├── LINKS.md                              # Role 4/5 — submission links and access checks
+    └── SPEAKER_NOTES.md                      # Role 4/5 — 10-minute script and timing
 ```
 
 ---
 
-## Dataset
+## Dataset (CSV used in this project)
 
-**Primary option — Superstore Sales Dataset**
+The project uses the **Superstore Sales Dataset** as the enterprise dataset for the full
+pipeline (cleaning, dashboard, notebook, and storytelling).
 
-- Source: [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)
-- Raw CSV mirror: [sample-superstore.csv](https://raw.githubusercontent.com/datasets/sample-superstore/master/data/sample-superstore.csv)
-- Size: ~9,994 rows × 21 columns (exceeds the 5,000-row requirement)
-- Field mix:
-  - **Temporal:** `Order Date`, `Ship Date`
-  - **Continuous:** `Sales`, `Profit`, `Discount`, `Quantity`
-  - **Categorical:** `Segment`, `Category`, `Sub-Category`, `Ship Mode`
-  - **Geospatial:** `Country`, `Region`, `State`, `City`, `Postal Code`
+| Item | Value |
+|------|-------|
+| Dataset name | Superstore Sales Dataset |
+| Source (Kaggle) | [Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final) |
+| Raw CSV mirror | [sample-superstore.csv](https://raw.githubusercontent.com/datasets/sample-superstore/master/data/sample-superstore.csv) |
+| Raw CSV (repo) | `data/raw/superstore_raw.csv` |
+| Processed CSV (repo) | `data/processed/clean_dataset.csv` |
+| Original rows / columns | 9,994 rows × 21 columns |
+| Processed columns | 27 (includes 6 derived fields) |
+| Time range | 2014-01-03 → 2017-12-30 |
+| Geographic scope | United States |
+| Currency | USD |
+| Granularity | One row per order line (product within an order) |
 
-**Alternative option — Global Electronics Retailer** (star schema, 60,000+ rows):
-[Kaggle dataset](https://www.kaggle.com/datasets/bhavikjikadara/global-electronics-retailers/data)
+**Field mix (rubric requirement):**
+
+- **Temporal:** `Order Date`, `Ship Date`
+- **Continuous:** `Sales`, `Profit`, `Discount`, `Quantity`
+- **Categorical:** `Segment`, `Category`, `Sub-Category`, `Ship Mode`
+- **Geospatial:** `Country`, `Region`, `State`, `City`, `Postal Code`
+
+**Derived fields added by `src/clean_data.py`:** `Order Year`, `Order Month`,
+`Order Quarter`, `Shipping Days`, `Profit Margin`, `Is Loss`.
+
+Full field definitions, null rates, imputation log, and quality checks are documented in
+[`data/DATA_DICTIONARY.md`](data/DATA_DICTIONARY.md).
 
 ---
 
@@ -86,7 +115,7 @@ src/clean_data.py  (audit → clean → type casting → imputation)
         ▼
 data/processed/clean_dataset.csv
         │
-        ├──▶ notebooks/final_visualizations.ipynb  →  assets/plots/*.png / *.html
+        ├──▶ notebooks/final_visualizations.ipynb  →  assets/plots/*.png / *.svg / *.html
         └──▶ dashboard/enterprise_dashboard.pbix   →  presentation/Executive_Presentation.pdf
 ```
 
@@ -110,7 +139,7 @@ python -m venv .venv
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Run the cleaning pipeline (once the raw CSV exists)
+# 4. Run the cleaning pipeline (raw CSV already included in this repo)
 python src/clean_data.py
 
 # 5. Open the notebook
@@ -161,23 +190,25 @@ jupyter notebook notebooks/final_visualizations.ipynb
 ## Deliverables checklist
 
 ### Role 1 — Data Architect & Wrangler (Edwing)
-- [ ] `data/raw/superstore_raw.csv`
-- [ ] `src/clean_data.py` (documented and runnable)
-- [ ] `data/processed/clean_dataset.csv`
-- [ ] `data/DATA_DICTIONARY.md` (types, ranges, null rates, imputation log)
+- [x] `data/raw/superstore_raw.csv`
+- [x] `src/clean_data.py` (documented and runnable)
+- [x] `data/processed/clean_dataset.csv`
+- [x] `data/DATA_DICTIONARY.md` (types, ranges, null rates, imputation log)
 
 ### Role 2 — BI Dashboard Lead (Neyzer)
-- [ ] `dashboard/enterprise_dashboard.pbix` (or `.twbx`)
-- [ ] Executive Overview: KPIs, map, time-series trend
-- [ ] Operational Drill-Down: Category → Sub-Category → Product
-- [ ] `dashboard/README.md` updated with measures, model, and filters
+- [x] `dashboard/enterprise_dashboard.pbix`
+- [x] Executive Overview: KPIs, map, time-series trend
+- [x] Operational Drill-Down: Category → Sub-Category → Product
+- [x] `dashboard/README.md` updated with measures, model, and filters
+- [x] `dashboard/theme.json` and dashboard screenshots
 
 ### Role 3 — Python Visualization Specialist (Laura)
-- [ ] `notebooks/final_visualizations.ipynb` executed with markdown commentary
-- [ ] `assets/plots/distribution_kde.png`
-- [ ] `assets/plots/correlation_heatmap.png`
-- [ ] `assets/plots/uncertainty_ci.png`
-- [ ] `assets/plots/interactive_scatter.html`
+- [x] `notebooks/final_visualizations.ipynb` executed with markdown commentary
+- [x] `assets/plots/distribution_kde.png`
+- [x] `assets/plots/correlation_heatmap.png`
+- [x] `assets/plots/uncertainty_ci.png`
+- [x] `assets/plots/interactive_scatter.html`
+- [x] Extra assets: `boxplot_profit.png/svg` and SVG exports
 
 ### Role 4 — Narrative & Data Storytelling Lead (Josmar)
 - [ ] `presentation/Executive_Presentation.pdf` (or `.pptx`)
@@ -186,9 +217,10 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [ ] `presentation/SPEAKER_NOTES.md` completed and rehearsed
 
 ### Role 5 — QA & Integration Lead (Jesus)
-- [ ] Repository structure, `.gitignore`, `requirements.txt`, `README.md`
+- [x] Repository structure, `.gitignore`, `requirements.txt`, `README.md`
+- [x] PR reviews and merge QA for Roles 1–3
 - [ ] Public access verified (“Everyone with the link”)
-- [ ] 0-baseline and colorblind-safe palette audit
+- [ ] 0-baseline and colorblind-safe palette final audit
 - [ ] Notebook reproduces from `Kernel → Restart & Run All`
 - [ ] `.pbix` opens without broken data-source errors
 - [ ] `presentation/LINKS.md` and `presentation/SPEAKER_NOTES.md` complete
