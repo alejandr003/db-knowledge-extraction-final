@@ -211,10 +211,10 @@ jupyter notebook notebooks/final_visualizations.ipynb
 - [x] Extra assets: `boxplot_profit.png/svg` and SVG exports
 
 ### Role 4 — Narrative & Data Storytelling Lead (Josmar)
-- [ ] `presentation/Executive_Presentation.pdf` (or `.pptx`)
-- [ ] Setup → Conflict/Insight → Resolution narrative
-- [ ] Public Canva/PowerPoint link registered in `presentation/LINKS.md`
-- [ ] `presentation/SPEAKER_NOTES.md` completed and rehearsed
+- [x] `presentation/Executive_Presentation.pdf` (or `.pptx`)
+- [x] Setup → Conflict/Insight → Resolution narrative
+- [x] Public Canva/PowerPoint link registered in `presentation/LINKS.md`
+- [x] `presentation/SPEAKER_NOTES.md` completed (rehearsal timing still pending)
 
 ### Role 5 — QA & Integration Lead (Jesus)
 - [x] Repository structure, `.gitignore`, `requirements.txt`, `README.md`
