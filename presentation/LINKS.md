@@ -18,8 +18,8 @@ repository and any Canva/Power BI links must be set to **“Everyone with the li
 | Dashboard (published, optional) | TBD | Everyone with the link | TBD | Neyzer |
 | Python notebook | `notebooks/final_visualizations.ipynb` | Repository access | TBD | Laura |
 | Static plot assets | `assets/plots/` | Repository access | TBD | Laura |
-| Executive deck (PDF) | `presentation/Executive_Presentation.pdf` | Repository access | TBD | Josmar |
-| Executive deck (Canva) | TBD | Everyone with the link | TBD | Josmar |
+| Executive deck (PDF) | `presentation/Executive_Presentation.pdf` | Repository access | 2026-11-23 | Josmar |
+| Executive deck (Canva) | https://universi799-my.sharepoint.com/:p:/g/personal/2302007_utrivieramaya_edu_mx/cQoOU_pXM08eSr_k0Ev3c5LUEgUDH0TEW0MCcbu_bZYunLJekQ | Everyone with the link | 2026-11-23 | Josmar |
 | Raw dataset source | https://www.kaggle.com/datasets/vivek468/superstore-dataset-final | Public | TBD | Edwing |
 | Backup video (optional) | TBD | Everyone with the link | TBD | Jesus |
 
@@ -38,7 +38,7 @@ Paste the final GitHub URLs here so the professor can jump straight to each deli
 - **Notebook:** TBD
 - **Correlation heatmap:** TBD
 - **Interactive scatter:** TBD
-- **Speaker notes:** TBD
+- **Speaker notes:** https://github.com/alejandr003/db-knowledge-extraction-final/blob/main/presentation/SPEAKER_NOTES.md
 
 ---
 
@@ -92,4 +92,5 @@ All links verified in incognito mode on <DATE>.
 | Date | Author | Change |
 |------|--------|--------|
 | 2026-11-06 | Jesus (Role 5) | Initial template created |
+| 2026-11-23 | Josmar (Role 4) | Executive deck (PPTX/PDF) added; Canva/SharePoint link registered |
 | TBD | Jesus (Role 5) | Final links verified and marked complete |
